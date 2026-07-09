@@ -1,0 +1,10 @@
+pass_marku = 50
+uruvaaku match_check(peyar, score) {
+    irundhal (score >= pass_marku) {
+        thiruppi peyar + "pass"
+    }
+    illana {
+        thiruppi peyar + "fail"
+    }
+}
+solluu(match_check("Surjune", 87))

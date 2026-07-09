@@ -1,0 +1,29 @@
+{
+  "name": "tanglish",
+  "version": "0.1.0",
+  "description": "Tanglish — a beginner-friendly programming language with phonetic Tamil keywords in Roman script. Transpiles .tml source to JavaScript.",
+  "main": "cli.js",
+  "type": "commonjs",
+  "bin": {
+    "tanglish": "./cli.js"
+  },
+  "scripts": {
+    "test": "node test/tokenize_demo.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "tanglish",
+    "tamil",
+    "transpiler",
+    "education",
+    "programming-language"
+  ],
+  "author": "R S Surjune (25BDS057), Shri Hari A K (25BDS050) — Sri Krishna Arts and Science College",
+  "license": "MIT",
+  "dependencies": {
+    "chevrotain": "^11.0.3",
+    "commander": "^12.1.0"
+  }
+}
