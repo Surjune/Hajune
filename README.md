@@ -5,10 +5,7 @@ phonetic Tamil words written in Roman/English script. It is designed so that
 rural and Tamil-medium students can learn coding *logic* without having to
 learn English vocabulary at the same time.
 
-> A college capstone project by **R S Surjune (25BDS057)** and
-> **Shri Hari A K (25BDS050)**, Department of Computer Technology and
-> Data Science, Sri Krishna Arts and Science College.
-> Guide: **Dr. B. Radha**
+> A college capstone project by **R S Surjune (25BDS057)** 
 
 ## How it works
 
