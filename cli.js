@@ -46,7 +46,10 @@ function runFile(file, options) {
     console.error(`Warning: '${file}' does not end in .tml — trying to run it anyway.`);
   }
 
-  const source = fs.readFileSync(file, "utf8");
+  // Windows editors (Notepad, PowerShell) often save UTF-8 files with an
+  // invisible "byte order mark" as the very first character. Strip it,
+  // or the lexer reports a baffling 'unexpected character' on line 1.
+  const source = fs.readFileSync(file, "utf8").replace(/^\uFEFF/, "");
 
   // Source → JavaScript. Language mistakes stop here with one clear line.
   let js;
