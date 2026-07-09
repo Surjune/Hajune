@@ -41,4 +41,17 @@ class TanglishParserError extends TanglishError {
   }
 }
 
-module.exports = { TanglishError, TanglishLexerError, TanglishParserError };
+/** Thrown by src/transpiler.js if it meets an AST node it does not know. */
+class TanglishTranspilerError extends TanglishError {
+  constructor(message, line, column) {
+    super(message, line, column);
+    this.name = "TanglishTranspilerError";
+  }
+}
+
+module.exports = {
+  TanglishError,
+  TanglishLexerError,
+  TanglishParserError,
+  TanglishTranspilerError,
+};

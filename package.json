@@ -8,7 +8,7 @@
     "tanglish": "./cli.js"
   },
   "scripts": {
-    "test": "node test/tokenize_demo.js && node test/parser_demo.js"
+    "test": "node test/tokenize_demo.js && node test/parser_demo.js && node test/transpile_demo.js"
   },
   "engines": {
     "node": ">=20.19.0"

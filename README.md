@@ -102,14 +102,15 @@ Hajune/                       (repo root = the project)
 │   ├── tokens.js             Chevrotain token vocabulary + adapter
 │   ├── parser.js             Chevrotain grammar → AST
 │   ├── errors.js             shared TanglishError classes
-│   └── transpiler.js         AST → JavaScript emitter   (Task 3 — next)
+│   └── transpiler.js         AST → JavaScript emitter
 ├── docs/
 │   └── GRAMMAR.md            formal grammar + AST node reference
 ├── examples/
 │   └── grade_check.tml       demo program
 ├── test/
 │   ├── tokenize_demo.js      lexer sanity checks
-│   └── parser_demo.js        parser/AST sanity checks
+│   ├── parser_demo.js        parser/AST sanity checks
+│   └── transpile_demo.js     transpiler + program-output checks
 ├── cli.js                    Commander.js entry point   (Task 4 — later)
 └── package.json
 ```
