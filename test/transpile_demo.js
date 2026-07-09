@@ -114,7 +114,25 @@ check(`solluu(-(2 + 3)) prints -5 (got ${run("solluu(-(2 + 3))")[0]})`,
 check(`solluu(2 * -3) prints -6 (got ${run("solluu(2 * -3)")[0]})`,
   run("solluu(2 * -3)")[0] === "-6");
 
-// ---- 6. Semicolons, comments, blank lines end-to-end -----------------------
+// ---- 6. Variables born inside a branch survive after it (Python-style) -----
+const branchBorn =
+  'marks = 80\nirundhal (marks >= 50) {\n  result = "pass"\n}\nillana {\n  result = "fail"\n}\nsolluu(result)\n';
+check(`variable created inside irundhal is usable after the block (got "${run(branchBorn)[0]}")`,
+  run(branchBorn)[0] === "pass");
+check("branch-born variable is hoisted as a single let above the if",
+  compile(branchBorn).includes("let result;\nif (marks >= 50) {"));
+const elseBorn =
+  'x = 1\nirundhal (x > 5) {\n  y = 10\n}\nillana {\n  y = 20\n}\nsolluu(y)\n';
+check(`variable set in BOTH branches works (got ${run(elseBorn)[0]})`,
+  run(elseBorn)[0] === "20");
+const nestedBorn =
+  'a = 1\nirundhal (a > 0) {\n  irundhal (a > 2) {\n    z = 100\n  }\n  illana {\n    z = 5\n  }\n}\nillana {\n  z = 0\n}\nsolluu(z)\n';
+check(`nested-if variable also hoists correctly (got ${run(nestedBorn)[0]})`,
+  run(nestedBorn)[0] === "5");
+check("already-declared variables are NOT hoisted again",
+  !compile("r = 1\nirundhal (unmai) {\n  r = 2\n}\nsolluu(r)").includes("let r;"));
+
+// ---- 7. Semicolons, comments, blank lines end-to-end -----------------------
 const messy = 'x = 5;\n\n// oru comment\n\nirundhal (x > 3) {\n  solluu("periya")\n}\nillana {\n  solluu("chinna")\n}\n';
 check(`semicolons + comments + blank lines run fine (got "${run(messy)[0]}")`,
   run(messy)[0] === "periya");

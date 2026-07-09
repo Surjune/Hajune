@@ -97,8 +97,25 @@ function emitStatement(node, depth, scopes) {
     case "IfStatement": {
       // No new scope here — Tanglish variables are function-scoped,
       // so the if/illana blocks reuse the scopes we already have.
+      //
+      // Hoisting: a variable BORN inside a branch must survive after
+      // the branch (Python behaviour), but a `let` inside JS braces
+      // would die at the closing `}`. So we declare such names just
+      // above the if, and the branch assignment becomes a plain one:
+      //     let result;
+      //     if (...) { result = "pass"; } else { result = "fail"; }
+      const current = scopes[scopes.length - 1];
+      const born = new Set();
+      collectAssignedNames(node.consequent, born);
+      if (node.alternate) collectAssignedNames(node.alternate, born);
+      const toHoist = [...born].filter((name) => !current.has(name));
+      let code = "";
+      if (toHoist.length > 0) {
+        toHoist.forEach((name) => current.add(name));
+        code += `${pad}let ${toHoist.join(", ")};\n`;
+      }
       const condition = emitExpression(node.condition);
-      let code =
+      code +=
         `${pad}if (${condition}) {\n` +
         emitBlockBody(node.consequent, depth + 1, scopes) +
         `${pad}}`;
@@ -128,6 +145,23 @@ function emitStatement(node, depth, scopes) {
 function emitBlockBody(block, depth, scopes) {
   if (block.body.length === 0) return "";
   return block.body.map((s) => emitStatement(s, depth, scopes)).join("\n") + "\n";
+}
+
+/**
+ * Collect every variable name assigned anywhere inside a block,
+ * including inside nested if/illana blocks. Used for hoisting.
+ * Does NOT look inside nested function declarations — those have
+ * their own scope and take care of their own variables.
+ */
+function collectAssignedNames(block, names) {
+  for (const stmt of block.body) {
+    if (stmt.type === "Assignment") {
+      names.add(stmt.name);
+    } else if (stmt.type === "IfStatement") {
+      collectAssignedNames(stmt.consequent, names);
+      if (stmt.alternate) collectAssignedNames(stmt.alternate, names);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------
