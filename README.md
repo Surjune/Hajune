@@ -18,7 +18,7 @@ Tanglish is a **transpiler**, not a compiler or virtual machine:
 
 | Component | Technology |
 |---|---|
-| Implementation language | JavaScript (Node.js v18+) |
+| Implementation language | JavaScript (Node.js v20.19+) |
 | Lexer | Hand-written (character-by-character) |
 | Parser | Chevrotain |
 | CLI | Commander.js |
@@ -95,17 +95,22 @@ tanglish run grade_check.tml
 ## Project structure
 
 ```
-tamil-lang/
+Hajune/                       (repo root = the project)
 ├── src/
-│   ├── keywords.js       keyword → token type map
-│   ├── lexer.js          hand-written tokenizer
-│   ├── parser.js         Chevrotain grammar → AST
-│   └── transpiler.js     AST → JavaScript emitter
+│   ├── keywords.js           keyword → token type map
+│   ├── lexer.js              hand-written tokenizer
+│   ├── tokens.js             Chevrotain token vocabulary + adapter
+│   ├── parser.js             Chevrotain grammar → AST
+│   ├── errors.js             shared TanglishError classes
+│   └── transpiler.js         AST → JavaScript emitter   (Task 3 — next)
+├── docs/
+│   └── GRAMMAR.md            formal grammar + AST node reference
 ├── examples/
-│   └── grade_check.tml   demo program
+│   └── grade_check.tml       demo program
 ├── test/
-│   └── tokenize_demo.js  lexer sanity checks (npm test)
-├── cli.js                Commander.js entry point
+│   ├── tokenize_demo.js      lexer sanity checks
+│   └── parser_demo.js        parser/AST sanity checks
+├── cli.js                    Commander.js entry point   (Task 4 — later)
 └── package.json
 ```
 

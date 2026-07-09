@@ -21,14 +21,9 @@
  */
 "use strict";
 const { keywordType } = require("./keywords");
-class TanglishLexerError extends Error {
-  constructor(message, line, column) {
-    super(message);
-    this.name = "TanglishLexerError";
-    this.line = line;
-    this.column = column;
-  }
-}
+// TanglishLexerError now lives in src/errors.js (shared with the parser),
+// but is still re-exported below so existing require("./lexer") users keep working.
+const { TanglishLexerError } = require("./errors");
 function isDigit(ch) {
   return ch >= "0" && ch <= "9";
 }
