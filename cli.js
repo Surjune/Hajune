@@ -35,6 +35,17 @@ program
 
 /** The whole 'tanglish run' journey, start to finish. */
 function runFile(file, options) {
+  // A missing file should read like a sentence, not an ENOENT dump.
+  if (!fs.existsSync(file)) {
+    console.error(`Error: cannot find '${file}' — check the file name and path.`);
+    process.exit(1);
+  }
+
+  // Wrong extension is only a warning; maybe they know what they're doing.
+  if (!file.endsWith(".tml")) {
+    console.error(`Warning: '${file}' does not end in .tml — trying to run it anyway.`);
+  }
+
   const source = fs.readFileSync(file, "utf8");
 
   // Source → JavaScript. Language mistakes stop here with one clear line.
@@ -55,8 +66,15 @@ function runFile(file, options) {
     console.log("---- program output ----------");
   }
 
-  // Execute the generated JavaScript right here in Node.
-  new Function(js)();
+  // Execute the generated JavaScript right here in Node. If the program
+  // crashes while running (e.g. calling a function that doesn't exist),
+  // report it in one line — no JavaScript stack trace.
+  try {
+    new Function(js)();
+  } catch (err) {
+    console.error(`Runtime error: ${err.message}`);
+    process.exit(1);
+  }
 }
 
 program.parse();
