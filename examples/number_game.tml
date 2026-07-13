@@ -1,0 +1,21 @@
+// Guess-the-number game — shows off ullidu (keyboard input),
+// ehtho (random), varai loops and niruthu.
+
+marathu MAX = 10
+secret = muulu(ehtho() * (MAX - 1)) + 1
+
+achchu("Naan 1 to 10 kulla oru number nenachirukken. Kandupidi!")
+
+varai (unmei) {
+    guess = enn(ullidu("Un guess enna? "))
+    enil (guess == secret) {
+        achchu("Correct! Nee jeichitte!")
+        niruthu
+    }
+    illaenil (guess < secret) {
+        achchu("Innum konjam periya number...")
+    }
+    illana {
+        achchu("Innum konjam chinna number...")
+    }
+}

@@ -1,0 +1,36 @@
+// Marks report — shows off lists, loops, illaenil chains,
+// marathu constants and the built-in functions.
+
+marathu THERCHI = 50
+
+seyal grade(m) {
+    enil (m >= 90) {
+        thiruppi "A"
+    }
+    illaenil (m >= 75) {
+        thiruppi "B"
+    }
+    illaenil (m >= THERCHI) {
+        thiruppi "C"
+    }
+    illana {
+        thiruppi "F"
+    }
+}
+
+marks = [92, 67, 45, 88]
+innaipu(marks, 71)
+
+total = 0
+mindum m ulla marks {
+    total = total + m
+}
+average = total / neelam(marks)
+
+achchu("Students: " + urai(neelam(marks)))
+achchu("Average:  " + urai(muulu(average)))
+achchu("Best:     " + urai(uchcham(92, 67, 45, 88, 71)))
+
+mindum i ulla 1 .. neelam(marks) {
+    achchu(urai(i) + ") " + urai(marks[i - 1]) + " - " + grade(marks[i - 1]))
+}
