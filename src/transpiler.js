@@ -28,6 +28,7 @@
  */
 "use strict";
 const { TanglishTranspilerError } = require("./errors");
+const { BUILTINS } = require("./builtins");
 
 const INDENT = "  "; // two spaces per nesting level in the generated JS
 
@@ -47,6 +48,11 @@ const PRIMARY_PRECEDENCE = 7; // literals, names, calls, list slots
 // Word operators become JavaScript symbols; everything else is itself.
 const JS_OPERATOR = { allathu: "||", matrum: "&&" };
 
+// Built-in functions this program actually calls (e.g. neelam, ullidu).
+// Collected while emitting; their helper definitions are pasted at the
+// top of the generated JS. Reset at the start of every transpile().
+let usedBuiltins = new Set();
+
 /**
  * transpile(ast) — the one function other files call.
  * Input:  the Program AST node from parse()
@@ -61,9 +67,21 @@ function transpile(ast) {
   // The program's top level is the outermost scope. Scopes are Maps of
   // variable name → how it was born ("let", "const" or "param"), so we
   // can refuse changes to marathu constants with a friendly message.
+  usedBuiltins = new Set();
   const programScope = new Map();
   const lines = ast.body.map((stmt) => emitStatement(stmt, 0, [programScope]));
-  return lines.join("\n") + "\n";
+  let code = lines.join("\n") + "\n";
+
+  // Paste in the helpers for whichever built-ins the program called.
+  if (usedBuiltins.size > 0) {
+    const helpers = [...usedBuiltins].map((name) => BUILTINS[name]);
+    code =
+      "// ---- Tanglish built-ins used by this program ----\n" +
+      helpers.join("\n") +
+      "\n// --------------------------------------------------\n" +
+      code;
+  }
+  return code;
 }
 
 // ---------------------------------------------------------------------
@@ -305,6 +323,10 @@ function emitExpression(node, parentPrecedence = 0) {
       return node.name;
 
     case "CallExpression": {
+      // Calling a built-in? Remember it so its helper gets pasted in.
+      if (Object.prototype.hasOwnProperty.call(BUILTINS, node.callee)) {
+        usedBuiltins.add(node.callee);
+      }
       const args = node.args.map((a) => emitExpression(a)).join(", ");
       return `${node.callee}(${args})`;
     }

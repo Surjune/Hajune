@@ -54,7 +54,9 @@ function runJS(js) {
   const realLog = console.log;
   console.log = (...args) => captured.push(args.join(" "));
   try {
-    new Function(js)(); // fresh scope each run, so top-level `let` is safe
+    // fresh scope each run, so top-level `let` is safe; 'require' is
+    // passed in for built-ins like ullidu that need Node modules
+    new Function("require", js)(require);
   } finally {
     console.log = realLog;
   }
@@ -179,6 +181,27 @@ check("nested lists index correctly (g[1][0])",
   run("g = [[1, 2], [3, 4]]\nachchu(g[1][0])")[0] === "3");
 check("variables born inside a varai loop survive it",
   run('varai (poi) {\n  x = 1\n}\nachchu("alive")')[0] === "alive");
+
+// ---- 9. Built-in functions ---------------------------------------------------
+check(`neelam gives string and list lengths (got ${run('achchu(neelam("vanakkam"))\nachchu(neelam([1, 2, 3]))').join(",")})`,
+  run('achchu(neelam("vanakkam"))\nachchu(neelam([1, 2, 3]))').join(",") === "8,3");
+check("enn and urai convert both ways",
+  run('achchu(enn("5") + 1)\nachchu(urai(5) + "0")').join(",") === "6,50");
+check(`muulu rounds and uchcham picks the biggest (got ${run("achchu(muulu(7 / 2))\nachchu(uchcham(10, 25, 4))").join(",")})`,
+  run("achchu(muulu(7 / 2))\nachchu(uchcham(10, 25, 4))").join(",") === "4,25");
+check("vagai names the kind of a value (number/string/list/null)",
+  run('achchu(vagai(5))\nachchu(vagai("hi"))\nachchu(vagai([1]))\nachchu(vagai(onnumilai))').join(",") ===
+  "number,string,list,null");
+check("innaipu and neekku grow and shrink a list",
+  run("m = [1, 2]\ninnaipu(m, 3)\nachchu(neelam(m))\nachchu(neekku(m))\nachchu(neelam(m))").join(",") === "3,3,2");
+check("ehtho gives a number between 0 and 1",
+  run("r = ehtho()\nachchu(r >= 0 matrum r < 1)")[0] === "true");
+check("only the built-ins a program uses are pasted into its JS",
+  compile("achchu(neelam([1]))").includes("function neelam") &&
+  !compile("achchu(neelam([1]))").includes("function ehtho") &&
+  !compile("achchu(1)").includes("Tanglish built-ins"));
+check("ullidu's helper (keyboard input) is included when called",
+  compile('peyar = ullidu("Name: ")').includes("function ullidu"));
 
 console.log("");
 if (failures === 0) {

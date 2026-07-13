@@ -69,11 +69,13 @@ function runFile(file, options) {
     console.log("---- program output ----------");
   }
 
-  // Execute the generated JavaScript right here in Node. If the program
-  // crashes while running (e.g. calling a function that doesn't exist),
-  // report it in one line — no JavaScript stack trace.
+  // Execute the generated JavaScript right here in Node. We hand it
+  // 'require' so built-ins like ullidu (keyboard input) can reach
+  // Node's own modules. If the program crashes while running (e.g.
+  // calling a function that doesn't exist), report it in one line —
+  // no JavaScript stack trace.
   try {
-    new Function(js)();
+    new Function("require", js)(require);
   } catch (err) {
     console.error(`Runtime error: ${err.message}`);
     process.exit(1);
