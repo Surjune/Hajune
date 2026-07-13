@@ -19,7 +19,7 @@ const fs = require("fs");
 const path = require("path");
 const { tokenize } = require("../src/lexer");
 const { parse } = require("../src/parser");
-const { transpile } = require("../src/transpiler");
+const { transpile, TanglishTranspilerError } = require("../src/transpiler");
 
 let failures = 0;
 function check(label, condition) {
@@ -28,6 +28,18 @@ function check(label, condition) {
   } else {
     failures++;
     console.log(`  FAIL  ${label}`);
+  }
+}
+
+/** Expect fn() to throw a TanglishTranspilerError containing `snippet`. */
+function checkError(label, fn, snippet) {
+  try {
+    fn();
+    failures++;
+    console.log(`  FAIL  ${label} (no error was thrown)`);
+  } catch (err) {
+    const ok = err instanceof TanglishTranspilerError && err.message.includes(snippet);
+    check(`${label} — "${err.message.slice(0, 70)}..."`, ok);
   }
 }
 
@@ -136,6 +148,37 @@ check("already-declared variables are NOT hoisted again",
 const messy = 'x = 5;\n\n// oru comment\n\nenil (x > 3) {\n  achchu("periya")\n}\nillana {\n  achchu("chinna")\n}\n';
 check(`semicolons + comments + blank lines run fine (got "${run(messy)[0]}")`,
   run(messy)[0] === "periya");
+
+// ---- 8. v2 features: loops, logic, const, lists -----------------------------
+check(`varai counts 1 2 3 (got ${run("i = 1\nvarai (i <= 3) {\n  achchu(i)\n  i = i + 1\n}").join(",")})`,
+  run("i = 1\nvarai (i <= 3) {\n  achchu(i)\n  i = i + 1\n}").join(",") === "1,2,3");
+check(`mindum 1 .. 5 sums to 15, both ends included (got ${run("t = 0\nmindum i ulla 1 .. 5 {\n  t = t + i\n}\nachchu(t)")[0]})`,
+  run("t = 0\nmindum i ulla 1 .. 5 {\n  t = t + i\n}\nachchu(t)")[0] === "15");
+check("mindum over a list visits every item in order",
+  run("mindum m ulla [10, 20, 30] {\n  achchu(m)\n}").join(",") === "10,20,30");
+check("the loop variable survives after the loop (Python-style)",
+  run("mindum i ulla 1 .. 3 {\n}\nachchu(i)")[0] === "4");
+const bcOut = run("mindum i ulla 1 .. 10 {\n  enil (i == 3) {\n    thodar\n  }\n  enil (i == 5) {\n    niruthu\n  }\n  achchu(i)\n}");
+check(`niruthu stops and thodar skips (got ${bcOut.join(",")})`, bcOut.join(",") === "1,2,4");
+const gradeSrc = 'm = 80\nenil (m >= 90) {\n  achchu("A")\n}\nillaenil (m >= 75) {\n  achchu("B")\n}\nillana {\n  achchu("F")\n}';
+check(`illaenil chain picks the right branch (got ${run(gradeSrc)[0]})`, run(gradeSrc)[0] === "B");
+check("illaenil emits the classic '} else if (' shape",
+  compile(gradeSrc).includes("} else if (m >= 75) {"));
+check("matrum/allathu/alla become &&/||/! with correct grouping",
+  run('a = 60\nenil (a >= 50 matrum alla (a > 100) allathu poi) {\n  achchu("ok")\n}')[0] === "ok" &&
+  compile("x = a matrum b allathu c").includes("a && b || c"));
+check("alla wraps comparisons in parentheses (!(a == b))",
+  compile("x = alla a == b").includes("!(a == b)"));
+check("marathu emits const",
+  compile("marathu PASS = 50").includes("const PASS = 50;"));
+checkError("changing a marathu constant is refused with its line",
+  () => compile("marathu P = 50\nP = 60"), "marathu constant");
+check(`lists: literal, index read and index write all work (got ${run("marks = [80, 65]\nmarks[0] = 99\nachchu(marks[0] + marks[1])")[0]})`,
+  run("marks = [80, 65]\nmarks[0] = 99\nachchu(marks[0] + marks[1])")[0] === "164");
+check("nested lists index correctly (g[1][0])",
+  run("g = [[1, 2], [3, 4]]\nachchu(g[1][0])")[0] === "3");
+check("variables born inside a varai loop survive it",
+  run('varai (poi) {\n  x = 1\n}\nachchu("alive")')[0] === "alive");
 
 console.log("");
 if (failures === 0) {
