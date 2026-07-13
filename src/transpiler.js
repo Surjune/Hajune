@@ -6,10 +6,10 @@
  * that Node.js can run directly.
  *
  * Keyword mapping (locked):
- *   uruvaaku   → function          solluu(x)  → console.log(x)
- *   irundhal   → if                unmai      → true
+ *   seyal      → function          achchu(x)  → console.log(x)
+ *   enil       → if                unmei      → true
  *   illana     → else              poi        → false
- *   thiruppi   → return            onnumilla  → null
+ *   thiruppi   → return            onnumilai  → null
  *
  * Variables: Tanglish has no 'let' — you just assign, like Python.
  * The transpiler remembers which names it has already seen in the
@@ -183,10 +183,10 @@ function emitExpression(node, parentPrecedence = 0) {
       return JSON.stringify(node.value);
 
     case "BooleanLiteral":
-      return node.value ? "true" : "false"; // unmai / poi
+      return node.value ? "true" : "false"; // unmei / poi
 
     case "NullLiteral":
-      return "null"; // onnumilla
+      return "null"; // onnumilai
 
     case "Identifier":
       return node.name;

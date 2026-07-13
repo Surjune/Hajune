@@ -122,11 +122,11 @@ const negGroup = parseSource("x = -(2 + 3)").body[0].value;
 check(`-(2 + 3) evaluates to -5 (got ${evalExpr(negGroup)})`,
   negGroup.type === "UnaryExpression" && evalExpr(negGroup) === -5);
 
-// ---- 5. Literals: unmai / poi / onnumilla ---------------------------------
-const lits = parseSource("a = unmai\nb = poi\nc = onnumilla");
-check("unmai → BooleanLiteral true", lits.body[0].value.type === "BooleanLiteral" && lits.body[0].value.value === true);
+// ---- 5. Literals: unmei / poi / onnumilai ---------------------------------
+const lits = parseSource("a = unmei\nb = poi\nc = onnumilai");
+check("unmei → BooleanLiteral true", lits.body[0].value.type === "BooleanLiteral" && lits.body[0].value.value === true);
 check("poi → BooleanLiteral false", lits.body[1].value.type === "BooleanLiteral" && lits.body[1].value.value === false);
-check("onnumilla → NullLiteral", lits.body[2].value.type === "NullLiteral");
+check("onnumilai → NullLiteral", lits.body[2].value.type === "NullLiteral");
 
 // ---- 6. Optional semicolons and blank lines -------------------------------
 check("optional semicolons parse cleanly",
@@ -138,9 +138,9 @@ check("comments plus blank lines still parse",
 
 // ---- 7. Friendly parser errors --------------------------------------------
 checkError("missing closing brace is reported with a line number",
-  () => parseSource("uruvaaku f() {\nthiruppi 1\n"), "on line");
+  () => parseSource("seyal f() {\nthiruppi 1\n"), "on line");
 checkError("malformed if (missing ')') is reported",
-  () => parseSource("irundhal (x > 1 {\nthiruppi 1\n}"), "on line 1");
+  () => parseSource("enil (x > 1 {\nthiruppi 1\n}"), "on line 1");
 checkError("dangling operator is reported",
   () => parseSource("a = 1 +"), "on line 1");
 

@@ -29,14 +29,14 @@ Tanglish is a **transpiler**, not a compiler or virtual machine:
 
 | Tanglish | Meaning | JavaScript equivalent |
 |---|---|---|
-| `uruvaaku` | function definition | `function` |
-| `irundhal` | if | `if` |
+| `seyal` | function definition | `function` |
+| `enil` | if | `if` |
 | `illana` | else | `else` |
 | `thiruppi` | return | `return` |
-| `solluu` | print | `console.log` |
-| `unmai` | true | `true` |
+| `achchu` | print | `console.log` |
+| `unmei` | true | `true` |
 | `poi` | false | `false` |
-| `onnumilla` | null | `null` |
+| `onnumilai` | null | `null` |
 
 Variables are declared Python-style — just assign: `pass_marku = 50`
 (the transpiler emits `let` in the generated JavaScript).
@@ -47,15 +47,15 @@ Variables are declared Python-style — just assign: `pass_marku = 50`
 
 ```
 pass_marku = 50
-uruvaaku match_check(peyar, score) {
-    irundhal (score >= pass_marku) {
+seyal match_check(peyar, score) {
+    enil (score >= pass_marku) {
         thiruppi peyar + "pass"
     }
     illana {
         thiruppi peyar + "fail"
     }
 }
-solluu(match_check("Surjune", 87))
+achchu(match_check("Surjune", 87))
 ```
 
 Output:

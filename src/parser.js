@@ -127,7 +127,7 @@ class TanglishParser extends CstParser {
       ]);
     });
 
-    // functionDeclaration := 'uruvaaku' name '(' parameterList? ')' block
+    // functionDeclaration := 'seyal' name '(' parameterList? ')' block
     $.RULE("functionDeclaration", () => {
       $.CONSUME(T.FUNCTION);
       $.CONSUME(T.IDENTIFIER);
@@ -148,7 +148,7 @@ class TanglishParser extends CstParser {
       });
     });
 
-    // ifStatement := 'irundhal' '(' expression ')' block ('illana' block)?
+    // ifStatement := 'enil' '(' expression ')' block ('illana' block)?
     // (Newlines before 'illana' are removed by a pre-pass in parse(),
     //  so 'illana' may freely sit on its own line in the source.)
     $.RULE("ifStatement", () => {
@@ -169,7 +169,7 @@ class TanglishParser extends CstParser {
       $.SUBRULE($.expression);
     });
 
-    // printStatement := 'solluu' '(' expression ')'
+    // printStatement := 'achchu' '(' expression ')'
     $.RULE("printStatement", () => {
       $.CONSUME(T.PRINT);
       $.CONSUME(T.LPAREN);
@@ -233,7 +233,7 @@ class TanglishParser extends CstParser {
       $.SUBRULE($.primaryExpression);
     });
 
-    // primaryExpression := number | string | unmai | poi | onnumilla
+    // primaryExpression := number | string | unmei | poi | onnumilai
     //                    | name | name(...)  | '(' expression ')'
     $.RULE("primaryExpression", () => {
       $.OR([

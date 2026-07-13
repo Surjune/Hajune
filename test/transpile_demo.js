@@ -8,7 +8,7 @@
  *    program output is exactly "Surjunepass".
  * 3. Verifies the locked emitter rules:
  *      - first assignment → let, reassignment → plain name
- *      - unmai/poi/onnumilla → true/false/null
+ *      - unmei/poi/onnumilai → true/false/null
  *      - precedence survives the round trip (2 + 3 * 4 prints 14)
  *      - parentheses are re-inserted where needed ((2 + 3) * 4 prints 20)
  *      - unary minus works
@@ -69,13 +69,13 @@ check(`demo program prints "Surjunepass" (got "${demoOutput[0]}")`,
   demoOutput.length === 1 && demoOutput[0] === "Surjunepass");
 
 // ---- 3. Keyword / emitter mapping ----------------------------------------
-check("uruvaaku becomes a JS function declaration",
+check("seyal becomes a JS function declaration",
   demoJS.includes("function match_check(peyar, score) {"));
-check("irundhal/illana become if/else",
+check("enil/illana become if/else",
   demoJS.includes("if (score >= pass_marku) {") && demoJS.includes("} else {"));
 check("thiruppi becomes return",
   demoJS.includes('return peyar + "pass";'));
-check("solluu becomes console.log",
+check("achchu becomes console.log",
   demoJS.includes("console.log(match_check(\"Surjune\", 87));"));
 check("first assignment emits let",
   demoJS.includes("let pass_marku = 50;"));
@@ -85,55 +85,55 @@ check("reassignment drops the let",
   reassign.includes("let x = 1;") && reassign.includes("\nx = 2;") &&
   reassign.indexOf("let") === reassign.lastIndexOf("let"));
 
-const literals = compile("a = unmai\nb = poi\nc = onnumilla");
-check("unmai → true, poi → false, onnumilla → null",
+const literals = compile("a = unmei\nb = poi\nc = onnumilai");
+check("unmei → true, poi → false, onnumilai → null",
   literals.includes("let a = true;") &&
   literals.includes("let b = false;") &&
   literals.includes("let c = null;"));
 
-const paramAssign = compile("uruvaaku f(score) {\nscore = score + 1\nthiruppi score\n}");
+const paramAssign = compile("seyal f(score) {\nscore = score + 1\nthiruppi score\n}");
 check("assigning to a parameter never re-declares it",
   paramAssign.includes("score = score + 1;") && !paramAssign.includes("let score"));
 
 // ---- 4. Precedence and parentheses round-trip -----------------------------
-check(`solluu(2 + 3 * 4) prints 14 (got ${run("solluu(2 + 3 * 4)")[0]})`,
-  run("solluu(2 + 3 * 4)")[0] === "14");
-check(`solluu((2 + 3) * 4) prints 20 (got ${run("solluu((2 + 3) * 4)")[0]})`,
-  run("solluu((2 + 3) * 4)")[0] === "20");
+check(`achchu(2 + 3 * 4) prints 14 (got ${run("achchu(2 + 3 * 4)")[0]})`,
+  run("achchu(2 + 3 * 4)")[0] === "14");
+check(`achchu((2 + 3) * 4) prints 20 (got ${run("achchu((2 + 3) * 4)")[0]})`,
+  run("achchu((2 + 3) * 4)")[0] === "20");
 check("needed parentheses reappear in the JS",
-  compile("solluu((2 + 3) * 4)").includes("(2 + 3) * 4"));
+  compile("achchu((2 + 3) * 4)").includes("(2 + 3) * 4"));
 check("unneeded parentheses are not added",
-  compile("solluu(2 + 3 * 4)").includes("console.log(2 + 3 * 4);"));
-check(`10 - (3 - 2) keeps its grouping (got ${run("solluu(10 - (3 - 2))")[0]})`,
-  run("solluu(10 - (3 - 2))")[0] === "9");
+  compile("achchu(2 + 3 * 4)").includes("console.log(2 + 3 * 4);"));
+check(`10 - (3 - 2) keeps its grouping (got ${run("achchu(10 - (3 - 2))")[0]})`,
+  run("achchu(10 - (3 - 2))")[0] === "9");
 
 // ---- 5. Unary minus --------------------------------------------------------
-check(`solluu(-5) prints -5 (got ${run("solluu(-5)")[0]})`, run("solluu(-5)")[0] === "-5");
-check(`solluu(-(2 + 3)) prints -5 (got ${run("solluu(-(2 + 3))")[0]})`,
-  run("solluu(-(2 + 3))")[0] === "-5");
-check(`solluu(2 * -3) prints -6 (got ${run("solluu(2 * -3)")[0]})`,
-  run("solluu(2 * -3)")[0] === "-6");
+check(`achchu(-5) prints -5 (got ${run("achchu(-5)")[0]})`, run("achchu(-5)")[0] === "-5");
+check(`achchu(-(2 + 3)) prints -5 (got ${run("achchu(-(2 + 3))")[0]})`,
+  run("achchu(-(2 + 3))")[0] === "-5");
+check(`achchu(2 * -3) prints -6 (got ${run("achchu(2 * -3)")[0]})`,
+  run("achchu(2 * -3)")[0] === "-6");
 
 // ---- 6. Variables born inside a branch survive after it (Python-style) -----
 const branchBorn =
-  'marks = 80\nirundhal (marks >= 50) {\n  result = "pass"\n}\nillana {\n  result = "fail"\n}\nsolluu(result)\n';
-check(`variable created inside irundhal is usable after the block (got "${run(branchBorn)[0]}")`,
+  'marks = 80\nenil (marks >= 50) {\n  result = "pass"\n}\nillana {\n  result = "fail"\n}\nachchu(result)\n';
+check(`variable created inside enil is usable after the block (got "${run(branchBorn)[0]}")`,
   run(branchBorn)[0] === "pass");
 check("branch-born variable is hoisted as a single let above the if",
   compile(branchBorn).includes("let result;\nif (marks >= 50) {"));
 const elseBorn =
-  'x = 1\nirundhal (x > 5) {\n  y = 10\n}\nillana {\n  y = 20\n}\nsolluu(y)\n';
+  'x = 1\nenil (x > 5) {\n  y = 10\n}\nillana {\n  y = 20\n}\nachchu(y)\n';
 check(`variable set in BOTH branches works (got ${run(elseBorn)[0]})`,
   run(elseBorn)[0] === "20");
 const nestedBorn =
-  'a = 1\nirundhal (a > 0) {\n  irundhal (a > 2) {\n    z = 100\n  }\n  illana {\n    z = 5\n  }\n}\nillana {\n  z = 0\n}\nsolluu(z)\n';
+  'a = 1\nenil (a > 0) {\n  enil (a > 2) {\n    z = 100\n  }\n  illana {\n    z = 5\n  }\n}\nillana {\n  z = 0\n}\nachchu(z)\n';
 check(`nested-if variable also hoists correctly (got ${run(nestedBorn)[0]})`,
   run(nestedBorn)[0] === "5");
 check("already-declared variables are NOT hoisted again",
-  !compile("r = 1\nirundhal (unmai) {\n  r = 2\n}\nsolluu(r)").includes("let r;"));
+  !compile("r = 1\nenil (unmei) {\n  r = 2\n}\nachchu(r)").includes("let r;"));
 
 // ---- 7. Semicolons, comments, blank lines end-to-end -----------------------
-const messy = 'x = 5;\n\n// oru comment\n\nirundhal (x > 3) {\n  solluu("periya")\n}\nillana {\n  solluu("chinna")\n}\n';
+const messy = 'x = 5;\n\n// oru comment\n\nenil (x > 3) {\n  achchu("periya")\n}\nillana {\n  achchu("chinna")\n}\n';
 check(`semicolons + comments + blank lines run fine (got "${run(messy)[0]}")`,
   run(messy)[0] === "periya");
 

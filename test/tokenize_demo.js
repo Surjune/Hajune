@@ -64,6 +64,17 @@ check(
   tokenize("thiruppu")[0].type === "IDENTIFIER"
 );
 check(
+  "keywords are case-insensitive (Enil / ENIL both mean if)",
+  tokenize("Enil")[0].type === "IF" && tokenize("ENIL")[0].type === "IF"
+);
+check(
+  "new v2 keywords lex correctly (varai/mindum/matrum/marathu)",
+  tokenize("varai")[0].type === "WHILE" &&
+  tokenize("mindum")[0].type === "FOR" &&
+  tokenize("matrum")[0].type === "AND" &&
+  tokenize("marathu")[0].type === "CONST"
+);
+check(
   "optional semicolon emits SEMICOLON without error",
   tokenize("x = 5;").some((t) => t.type === "SEMICOLON")
 );

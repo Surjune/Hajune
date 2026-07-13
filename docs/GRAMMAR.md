@@ -38,14 +38,14 @@ statement            ::= functionDeclaration
                        | assignmentStatement
                        | expressionStatement
 
-functionDeclaration  ::= "uruvaaku" IDENTIFIER "(" parameterList? ")" block
+functionDeclaration  ::= "seyal" IDENTIFIER "(" parameterList? ")" block
 parameterList        ::= IDENTIFIER ( "," IDENTIFIER )*
 
-ifStatement          ::= "irundhal" "(" expression ")" block
+ifStatement          ::= "enil" "(" expression ")" block
                          ( "illana" block )?
 
 returnStatement      ::= "thiruppi" expression
-printStatement       ::= "solluu" "(" expression ")"
+printStatement       ::= "achchu" "(" expression ")"
 assignmentStatement  ::= IDENTIFIER "=" expression
 expressionStatement  ::= expression
 
@@ -64,7 +64,7 @@ multiplicativeExpression ::= unaryExpression
 unaryExpression      ::= "-"? primaryExpression
 
 primaryExpression    ::= NUMBER | STRING
-                       | "unmai" | "poi" | "onnumilla"
+                       | "unmei" | "poi" | "onnumilai"
                        | callOrIdentifier
                        | "(" expression ")"
 
@@ -85,7 +85,7 @@ argumentList         ::= expression ( "," expression )*
   and group left-to-right: `10 - 3 - 2` means `(10 - 3) - 2`.
 - **Unary minus** applies once per expression: `-5`, `-(2 + 3)`, `2 * -3`
   all work; `--5` does not.
-- **`solluu`** takes exactly one argument.
+- **`achchu`** takes exactly one argument.
 
 ## Operator precedence (weakest → strongest binding)
 
@@ -106,10 +106,10 @@ Every node is a plain object with a `type` field; most carry the source
 |---|---|---|
 | `Program` | `body` (statement array) | whole file |
 | `Block` | `body` (statement array) | `{ ... }` |
-| `FunctionDeclaration` | `name` (string), `params` (string array), `body` (Block), `line` | `uruvaaku` |
-| `IfStatement` | `condition`, `consequent` (Block), `alternate` (Block or `null`), `line` | `irundhal` / `illana` |
+| `FunctionDeclaration` | `name` (string), `params` (string array), `body` (Block), `line` | `seyal` |
+| `IfStatement` | `condition`, `consequent` (Block), `alternate` (Block or `null`), `line` | `enil` / `illana` |
 | `ReturnStatement` | `argument`, `line` | `thiruppi` |
-| `PrintStatement` | `argument`, `line` | `solluu(...)` |
+| `PrintStatement` | `argument`, `line` | `achchu(...)` |
 | `Assignment` | `name` (string), `value`, `line` | `x = ...` |
 | `BinaryExpression` | `operator` (string), `left`, `right`, `line` | `+ - * / > < >= <= == !=` |
 | `UnaryExpression` | `operator` (`"-"`), `argument`, `line` | `-x` |
@@ -117,8 +117,8 @@ Every node is a plain object with a `type` field; most carry the source
 | `Identifier` | `name` (string), `line` | variable reference |
 | `NumberLiteral` | `value` (JS number), `line` | `50` |
 | `StringLiteral` | `value` (string, no quotes), `line` | `"pass"` |
-| `BooleanLiteral` | `value` (`true`/`false`), `line` | `unmai` / `poi` |
-| `NullLiteral` | `line` | `onnumilla` |
+| `BooleanLiteral` | `value` (`true`/`false`), `line` | `unmei` / `poi` |
+| `NullLiteral` | `line` | `onnumilai` |
 
 Conventions:
 
