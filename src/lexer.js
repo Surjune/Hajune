@@ -1,5 +1,5 @@
 /**
- * lexer.js — Hand-written Tanglish tokenizer
+ * lexer.js — Hand-written Hajune tokenizer
  * -------------------------------------------
  * Reads a .tml source string character by character and produces a
  * flat array of token objects:
@@ -17,13 +17,13 @@
  *   - Newlines: statement terminators — emitted as NEWLINE
  *   - Spaces/tabs: skipped
  *   - Comments: // to end of line, skipped
- *   - Unknown character: throws TanglishLexerError with line + character
+ *   - Unknown character: throws HajuneLexerError with line + character
  */
 "use strict";
 const { keywordType } = require("./keywords");
-// TanglishLexerError now lives in src/errors.js (shared with the parser),
+// HajuneLexerError now lives in src/errors.js (shared with the parser),
 // but is still re-exported below so existing require("./lexer") users keep working.
-const { TanglishLexerError } = require("./errors");
+const { HajuneLexerError } = require("./errors");
 function isDigit(ch) {
   return ch >= "0" && ch <= "9";
 }
@@ -89,15 +89,15 @@ function tokenize(source) {
       while (pos < source.length && isDigit(source[pos])) pos++;
       const next = source[pos];
       if (next === "." && isDigit(source[pos + 1])) {
-        throw new TanglishLexerError(
+        throw new HajuneLexerError(
           `Lexer error on line ${line}: float literals like ` +
           `'${source.slice(start, pos + 2)}...' are not supported yet — ` +
-          `Tanglish currently accepts whole numbers only.`,
+          `Hajune currently accepts whole numbers only.`,
           line, startCol
         );
       }
       if (next !== undefined && isIdentStart(next)) {
-        throw new TanglishLexerError(
+        throw new HajuneLexerError(
           `Lexer error on line ${line}: identifiers cannot start with a digit ` +
           `(saw '${source.slice(start, pos + 1)}').`,
           line, startCol
@@ -124,7 +124,7 @@ function tokenize(source) {
         pos++;
       }
       if (pos >= source.length || source[pos] === "\n") {
-        throw new TanglishLexerError(
+        throw new HajuneLexerError(
           `Lexer error on line ${startLine}: unterminated string literal — ` +
           `missing closing double quote (").`,
           startLine, startCol
@@ -145,13 +145,13 @@ function tokenize(source) {
       pos++;
       continue;
     }
-    throw new TanglishLexerError(
+    throw new HajuneLexerError(
       `Lexer error on line ${line}: unexpected character '${ch}' ` +
-      `(column ${col()}). Tanglish does not recognize this symbol.`,
+      `(column ${col()}). Hajune does not recognize this symbol.`,
       line, col()
     );
   }
   push("EOF", "", line, col());
   return tokens;
 }
-module.exports = { tokenize, TanglishLexerError };
+module.exports = { tokenize, HajuneLexerError };

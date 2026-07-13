@@ -1,7 +1,7 @@
 /**
- * keywords.js — Tanglish keyword vocabulary (v2)
+ * keywords.js — Hajune keyword vocabulary (v2)
  * -----------------------------------------------
- * Maps every reserved Tanglish keyword (Roman/phonetic Tamil script)
+ * Maps every reserved Hajune keyword (Roman/phonetic Tamil script)
  * to its token type name. The lexer consults this map after scanning
  * an identifier-shaped word: if the word is present here, it is a
  * KEYWORD token of the given type; otherwise it is a plain IDENTIFIER.

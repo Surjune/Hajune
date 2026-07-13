@@ -1,7 +1,7 @@
 /**
  * tokens.js — Chevrotain token vocabulary + adapter
  * --------------------------------------------------
- * The Tanglish lexer (src/lexer.js) is HAND-WRITTEN — a graded project
+ * The Hajune lexer (src/lexer.js) is HAND-WRITTEN — a graded project
  * requirement — so we do NOT use Chevrotain's built-in Lexer class.
  * Chevrotain's parser, however, needs two things from us:
  *

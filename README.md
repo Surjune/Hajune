@@ -1,6 +1,6 @@
-# Tanglish (தமிழ் + English)
+# Hajune
 
-**Tanglish** is a beginner-friendly programming language whose keywords are
+**Hajune** is a beginner-friendly programming language whose keywords are
 phonetic Tamil words written in Roman/English script. It is designed so that
 rural and Tamil-medium students can learn coding *logic* without having to
 learn English vocabulary at the same time.
@@ -9,7 +9,7 @@ learn English vocabulary at the same time.
 
 ## How it works
 
-Tanglish is a **transpiler**, not a compiler or virtual machine:
+Hajune is a **transpiler**, not a compiler or virtual machine:
 
 ```
 .tml source → Lexer (hand-written) → Parser (Chevrotain, AST)
@@ -34,7 +34,7 @@ through all four stages.
 Keywords are **case-insensitive** — `enil`, `Enil` and `ENIL` all work.
 (Variable names stay case-sensitive, like Python.)
 
-| Tanglish | Meaning | JavaScript equivalent |
+| Hajune | Meaning | JavaScript equivalent |
 |---|---|---|
 | `seyal` | function definition | `function` |
 | `enil` | if | `if` |
@@ -64,7 +64,7 @@ ends included), and `mindum m ulla marks { ... }` walks a list.
 
 These are ready-made functions, not keywords — they work like `achchu`:
 
-| Tanglish | Does | Example |
+| Hajune | Does | Example |
 |---|---|---|
 | `ullidu` | read what the user types | `peyar = ullidu("Enter name: ")` |
 | `neelam` | length of a string or list | `neelam(marks)` |
@@ -140,7 +140,7 @@ node cli.js run examples/grade_check.tml --show-js
 After `npm link`, run it from anywhere — just like Python:
 
 ```
-tanglish run grade_check.tml
+hajune run grade_check.tml
 ```
 
 ## Project structure
@@ -153,7 +153,7 @@ Hajune/                       (repo root = the project)
 │   ├── lexer.js              hand-written tokenizer
 │   ├── tokens.js             Chevrotain token vocabulary + adapter
 │   ├── parser.js             Chevrotain grammar → AST
-│   ├── errors.js             shared TanglishError classes
+│   ├── errors.js             shared HajuneError classes
 │   └── transpiler.js         AST → JavaScript emitter
 ├── docs/
 │   ├── ARCHITECTURE.md       start here — guided tour of every file

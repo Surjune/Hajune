@@ -19,7 +19,7 @@ const fs = require("fs");
 const path = require("path");
 const { tokenize } = require("../src/lexer");
 const { parse } = require("../src/parser");
-const { transpile, TanglishTranspilerError } = require("../src/transpiler");
+const { transpile, HajuneTranspilerError } = require("../src/transpiler");
 
 let failures = 0;
 function check(label, condition) {
@@ -31,19 +31,19 @@ function check(label, condition) {
   }
 }
 
-/** Expect fn() to throw a TanglishTranspilerError containing `snippet`. */
+/** Expect fn() to throw a HajuneTranspilerError containing `snippet`. */
 function checkError(label, fn, snippet) {
   try {
     fn();
     failures++;
     console.log(`  FAIL  ${label} (no error was thrown)`);
   } catch (err) {
-    const ok = err instanceof TanglishTranspilerError && err.message.includes(snippet);
+    const ok = err instanceof HajuneTranspilerError && err.message.includes(snippet);
     check(`${label} — "${err.message.slice(0, 70)}..."`, ok);
   }
 }
 
-/** Full pipeline: Tanglish source string → JavaScript source string. */
+/** Full pipeline: Hajune source string → JavaScript source string. */
 function compile(source) {
   return transpile(parse(tokenize(source)));
 }
@@ -63,7 +63,7 @@ function runJS(js) {
   return captured;
 }
 
-/** Convenience: Tanglish source → array of printed lines. */
+/** Convenience: Hajune source → array of printed lines. */
 function run(source) {
   return runJS(compile(source));
 }
@@ -199,7 +199,7 @@ check("ehtho gives a number between 0 and 1",
 check("only the built-ins a program uses are pasted into its JS",
   compile("achchu(neelam([1]))").includes("function neelam") &&
   !compile("achchu(neelam([1]))").includes("function ehtho") &&
-  !compile("achchu(1)").includes("Tanglish built-ins"));
+  !compile("achchu(1)").includes("Hajune built-ins"));
 check("ullidu's helper (keyboard input) is included when called",
   compile('peyar = ullidu("Name: ")').includes("function ullidu"));
 

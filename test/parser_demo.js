@@ -10,13 +10,13 @@
  *      - unary minus: -5 and -(2 + 3)
  *      - optional semicolons are accepted
  *      - blank lines are tolerated anywhere
- *      - grammar mistakes throw TanglishParserError with a line number
+ *      - grammar mistakes throw HajuneParserError with a line number
  */
 "use strict";
 const fs = require("fs");
 const path = require("path");
 const { tokenize } = require("../src/lexer");
-const { parse, TanglishParserError } = require("../src/parser");
+const { parse, HajuneParserError } = require("../src/parser");
 
 let failures = 0;
 function check(label, condition) {
@@ -28,14 +28,14 @@ function check(label, condition) {
   }
 }
 
-/** Expect fn() to throw a TanglishParserError whose message contains `snippet`. */
+/** Expect fn() to throw a HajuneParserError whose message contains `snippet`. */
 function checkError(label, fn, snippet) {
   try {
     fn();
     failures++;
     console.log(`  FAIL  ${label} (no error was thrown)`);
   } catch (err) {
-    const ok = err instanceof TanglishParserError && err.message.includes(snippet);
+    const ok = err instanceof HajuneParserError && err.message.includes(snippet);
     check(`${label} — "${err.message.slice(0, 70)}..."`, ok);
   }
 }

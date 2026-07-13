@@ -1,4 +1,4 @@
-# How Tanglish Works — A Guided Tour
+# How Hajune Works — A Guided Tour
 
 Read this first. It explains what every file does, in the order the
 code actually runs, and traces one tiny program through the whole
@@ -6,7 +6,7 @@ pipeline so you can see each stage's input and output.
 
 ## The big picture
 
-Tanglish is a **transpiler**: it does not execute Tamil-keyword code
+Hajune is a **transpiler**: it does not execute Tamil-keyword code
 directly. It translates a `.tml` program into plain JavaScript and lets
 Node.js run that. Four stages, each one small enough to read in a
 sitting:
@@ -28,7 +28,7 @@ your .tml file
 ```
 
 The command-line tool (`cli.js`) is the driver that pushes a file
-through all four stages when you type `tanglish run program.tml`.
+through all four stages when you type `hajune run program.tml`.
 
 ## One program, all four stages
 
@@ -83,14 +83,14 @@ before it.
 
 | # | File | One-line job |
 |---|---|---|
-| 1 | `src/keywords.js` | The dictionary: 18 Tanglish keywords → token type names. Case-insensitive lookup. The ONLY place the vocabulary lives. |
+| 1 | `src/keywords.js` | The dictionary: 18 Hajune keywords → token type names. Case-insensitive lookup. The ONLY place the vocabulary lives. |
 | 2 | `src/lexer.js` | Hand-written scanner: characters in, tokens out. Rejects floats, unknown symbols and unclosed strings with friendly line-numbered errors. |
-| 3 | `src/errors.js` | Three small error classes with one shared parent, `TanglishError`, so the CLI can catch every language error with a single check. |
+| 3 | `src/errors.js` | Three small error classes with one shared parent, `HajuneError`, so the CLI can catch every language error with a single check. |
 | 4 | `src/tokens.js` | The bridge to Chevrotain: declares its token vocabulary (never used for scanning — our lexer is the scanner) and adapts our tokens into the shape Chevrotain expects. |
 | 5 | `src/parser.js` | The grammar (Chevrotain `CstParser`, ~20 rules) plus the `AstBuilder` visitor that turns Chevrotain's raw tree into our clean AST. |
 | 6 | `src/builtins.js` | The 10 built-in functions (`ullidu`, `neelam`, `enn`, …) as ready-made JavaScript snippets. Not keywords — just functions that exist for free. |
 | 7 | `src/transpiler.js` | Walks the AST, emits indented JavaScript. Handles `let` vs reassignment, `marathu` constants, Python-style hoisting, precedence-aware parentheses, and pastes in only the built-ins the program used. |
-| 8 | `cli.js` | Commander.js front door: `tanglish run file.tml [--show-js]`. Friendly errors for missing files, strips Windows BOMs, executes the generated JS. |
+| 8 | `cli.js` | Commander.js front door: `hajune run file.tml [--show-js]`. Friendly errors for missing files, strips Windows BOMs, executes the generated JS. |
 
 Supporting folders:
 
@@ -115,7 +115,7 @@ Supporting folders:
   or loop must survive it (like Python). JavaScript's `let` dies at the
   closing brace, so the transpiler declares such names just above the
   block: `let result;` then `if (...) { result = "pass"; }`.
-- **Errors are sentences.** Every stage throws a `TanglishError`
+- **Errors are sentences.** Every stage throws a `HajuneError`
   subclass whose message names the line. The CLI prints exactly that
   one line — a student never sees a JavaScript stack trace.
 

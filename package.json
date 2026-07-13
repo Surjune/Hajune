@@ -1,11 +1,11 @@
 {
-  "name": "tanglish",
+  "name": "hajune",
   "version": "0.1.0",
-  "description": "Tanglish — a beginner-friendly programming language with phonetic Tamil keywords in Roman script. Transpiles .tml source to JavaScript.",
+  "description": "Hajune — a beginner-friendly programming language with phonetic Tamil keywords in Roman script. Transpiles .tml source to JavaScript.",
   "main": "cli.js",
   "type": "commonjs",
   "bin": {
-    "tanglish": "./cli.js"
+    "hajune": "./cli.js"
   },
   "scripts": {
     "test": "node test/tokenize_demo.js && node test/parser_demo.js && node test/transpile_demo.js"
@@ -14,7 +14,7 @@
     "node": ">=20.19.0"
   },
   "keywords": [
-    "tanglish",
+    "hajune",
     "tamil",
     "transpiler",
     "education",

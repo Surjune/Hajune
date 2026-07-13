@@ -1,5 +1,5 @@
 /**
- * transpiler.js — Tanglish AST → JavaScript emitter
+ * transpiler.js — Hajune AST → JavaScript emitter
  * --------------------------------------------------
  * The final stage of the pipeline. Walks the AST produced by
  * src/parser.js and returns a string of clean, indented JavaScript
@@ -17,7 +17,7 @@
  * Built-in functions (ullidu, neelam, ...) live in src/builtins.js and
  * are pasted into the output only when the program calls them.
  *
- * Variables: Tanglish has no 'let' — you just assign, like Python.
+ * Variables: Hajune has no 'let' — you just assign, like Python.
  * The transpiler remembers which names it has already seen in the
  * current scope:
  *   - FIRST assignment of a name  →  let name = ...;
@@ -33,7 +33,7 @@
  * "(2 + 3) * 4" comes out as "(2 + 3) * 4" again.
  */
 "use strict";
-const { TanglishTranspilerError } = require("./errors");
+const { HajuneTranspilerError } = require("./errors");
 const { BUILTINS } = require("./builtins");
 
 const INDENT = "  "; // two spaces per nesting level in the generated JS
@@ -66,7 +66,7 @@ let usedBuiltins = new Set();
  */
 function transpile(ast) {
   if (!ast || ast.type !== "Program") {
-    throw new TanglishTranspilerError(
+    throw new HajuneTranspilerError(
       "Transpiler error: expected a Program AST node from the parser."
     );
   }
@@ -82,7 +82,7 @@ function transpile(ast) {
   if (usedBuiltins.size > 0) {
     const helpers = [...usedBuiltins].map((name) => BUILTINS[name]);
     code =
-      "// ---- Tanglish built-ins used by this program ----\n" +
+      "// ---- Hajune built-ins used by this program ----\n" +
       helpers.join("\n") +
       "\n// --------------------------------------------------\n" +
       code;
@@ -109,7 +109,7 @@ function emitStatement(node, depth, scopes) {
       const value = emitExpression(node.value);
       if (current.has(node.name)) {
         if (current.get(node.name) === "const") {
-          throw new TanglishTranspilerError(
+          throw new HajuneTranspilerError(
             `Transpiler error on line ${node.line}: '${node.name}' is a ` +
             `marathu constant — its value can never be changed.`,
             node.line
@@ -124,7 +124,7 @@ function emitStatement(node, depth, scopes) {
     case "ConstDeclaration": {
       const current = scopes[scopes.length - 1];
       if (current.has(node.name)) {
-        throw new TanglishTranspilerError(
+        throw new HajuneTranspilerError(
           `Transpiler error on line ${node.line}: '${node.name}' already ` +
           `exists — marathu must introduce a brand-new name.`,
           node.line
@@ -155,7 +155,7 @@ function emitStatement(node, depth, scopes) {
     }
 
     case "IfStatement": {
-      // No new scope here — Tanglish variables are function-scoped,
+      // No new scope here — Hajune variables are function-scoped,
       // so the if/illana blocks reuse the scopes we already have.
       //
       // Hoisting: a variable BORN inside a branch must survive after
@@ -366,7 +366,7 @@ function emitExpression(node, parentPrecedence = 0) {
       return `${emitExpression(node.object, PRIMARY_PRECEDENCE)}[${emitExpression(node.index)}]`;
 
     default:
-      throw new TanglishTranspilerError(
+      throw new HajuneTranspilerError(
         `Transpiler error${node.line ? ` on line ${node.line}` : ""}: ` +
         `unknown AST node type "${node.type}".`,
         node.line
@@ -374,4 +374,4 @@ function emitExpression(node, parentPrecedence = 0) {
   }
 }
 
-module.exports = { transpile, TanglishTranspilerError };
+module.exports = { transpile, HajuneTranspilerError };

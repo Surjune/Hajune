@@ -1,5 +1,5 @@
 /**
- * builtins.js — Tanglish built-in functions
+ * builtins.js — Hajune built-in functions
  * ------------------------------------------
  * These ten names are NOT keywords — they are ready-made functions,
  * exactly like achchu maps to console.log. The transpiler watches for

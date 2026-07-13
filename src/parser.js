@@ -1,5 +1,5 @@
 /**
- * parser.js — Tanglish grammar (Chevrotain) + AST builder
+ * parser.js — Hajune grammar (Chevrotain) + AST builder
  * --------------------------------------------------------
  * Takes the token array produced by the HAND-WRITTEN lexer
  * (src/lexer.js) and turns it into a clean, plain-object AST
@@ -9,14 +9,14 @@
  *
  *   1. adaptTokens()  (src/tokens.js) — reshape our tokens into the
  *      form Chevrotain expects. Chevrotain's own Lexer is NOT used.
- *   2. TanglishParser — a Chevrotain CstParser subclass. Each RULE()
+ *   2. HajuneParser — a Chevrotain CstParser subclass. Each RULE()
  *      describes one piece of grammar. Chevrotain automatically builds
  *      a CST (Concrete Syntax Tree) from these rules.
  *   3. AstBuilder — a visitor that walks the CST and returns the small,
  *      tidy AST nodes documented in docs/GRAMMAR.md, for example:
  *          { type: "IfStatement", condition, consequent, alternate }
  *
- * Errors: any grammar problem is thrown as TanglishParserError with a
+ * Errors: any grammar problem is thrown as HajuneParserError with a
  * human-friendly message and a line number — never a raw Chevrotain
  * exception dump.
  *
@@ -34,7 +34,7 @@
  */
 "use strict";
 const { CstParser } = require("chevrotain");
-const { TanglishParserError } = require("./errors");
+const { HajuneParserError } = require("./errors");
 const {
   T,
   allTokens,
@@ -69,10 +69,10 @@ const friendlyErrorProvider = {
     return `expected ${describeExpected(expected)} but found ${describeToken(actual)}`;
   },
   buildNotAllInputParsedMessage({ firstRedundant }) {
-    return `unexpected ${describeToken(firstRedundant)} — Tanglish could not understand this part`;
+    return `unexpected ${describeToken(firstRedundant)} — Hajune could not understand this part`;
   },
   buildNoViableAltMessage({ actual }) {
-    return `this does not look like a valid Tanglish statement or expression ` +
+    return `this does not look like a valid Hajune statement or expression ` +
       `(problem near ${describeToken(actual[0])})`;
   },
   buildEarlyExitMessage({ actual }) {
@@ -113,7 +113,7 @@ function isAssignmentAhead($) {
   return false;
 }
 
-class TanglishParser extends CstParser {
+class HajuneParser extends CstParser {
   constructor() {
     super(allTokens, {
       // Stop at the FIRST real error instead of guessing and producing
@@ -436,7 +436,7 @@ class TanglishParser extends CstParser {
 }
 
 // One shared parser instance, reused for every parse() call.
-const parserInstance = new TanglishParser();
+const parserInstance = new HajuneParser();
 
 // ---------------------------------------------------------------------
 // CST → AST visitor
@@ -791,7 +791,7 @@ const astBuilder = new AstBuilder();
 
 /**
  * Pre-pass: delete NEWLINE tokens that come right before 'illana' or
- * 'illaenil'. Tanglish lets you write  }  and  illana {  on separate
+ * 'illaenil'. Hajune lets you write  }  and  illana {  on separate
  * lines (see the demo program); grammatically they still belong to the
  * if above, so those newlines are not real statement breaks.
  */
@@ -812,7 +812,7 @@ function dropNewlinesBeforeElse(tokens) {
 }
 
 /** Wrap Chevrotain's error object in our own friendly error class. */
-function toTanglishParserError(chevErr, lexerTokens) {
+function toHajuneParserError(chevErr, lexerTokens) {
   const tok = chevErr.token;
   let line = tok && Number.isFinite(tok.startLine) ? tok.startLine : null;
   let column = tok && Number.isFinite(tok.startColumn) ? tok.startColumn : null;
@@ -826,7 +826,7 @@ function toTanglishParserError(chevErr, lexerTokens) {
     }
   }
   const where = line !== null ? ` on line ${line}` : "";
-  return new TanglishParserError(
+  return new HajuneParserError(
     `Parser error${where}: ${chevErr.message}.`,
     line,
     column
@@ -837,16 +837,16 @@ function toTanglishParserError(chevErr, lexerTokens) {
  * parse(tokens) — the one function other files call.
  * Input:  token array from tokenize() in src/lexer.js
  * Output: the Program AST node
- * Throws: TanglishParserError with a line number on any grammar problem
+ * Throws: HajuneParserError with a line number on any grammar problem
  */
 function parse(lexerTokens) {
   const prepared = dropNewlinesBeforeElse(lexerTokens);
   parserInstance.input = adaptTokens(prepared);
   const cst = parserInstance.program();
   if (parserInstance.errors.length > 0) {
-    throw toTanglishParserError(parserInstance.errors[0], lexerTokens);
+    throw toHajuneParserError(parserInstance.errors[0], lexerTokens);
   }
   return astBuilder.visit(cst);
 }
 
-module.exports = { parse, TanglishParserError };
+module.exports = { parse, HajuneParserError };

@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
- * cli.js — The Tanglish command line
+ * cli.js — The Hajune command line
  * -----------------------------------
- * Makes running a Tanglish program feel exactly like running Python:
+ * Makes running a Hajune program feel exactly like running Python:
  *
- *     tanglish run grade_check.tml          (after npm link)
+ *     hajune run grade_check.tml          (after npm link)
  *     node cli.js run examples/grade_check.tml
  *     node cli.js run examples/grade_check.tml --show-js
  *
  * Pipeline per run:  read file → tokenize → parse → transpile → execute.
- * Any Tanglish language error (lexer or parser) is printed as ONE
+ * Any Hajune language error (lexer or parser) is printed as ONE
  * friendly line with the line number — never a JavaScript stack trace.
  */
 "use strict";
@@ -18,12 +18,12 @@ const { program } = require("commander");
 const { tokenize } = require("./src/lexer");
 const { parse } = require("./src/parser");
 const { transpile } = require("./src/transpiler");
-const { TanglishError } = require("./src/errors");
+const { HajuneError } = require("./src/errors");
 const { version } = require("./package.json");
 
 program
-  .name("tanglish")
-  .description("Tanglish — programming in phonetic Tamil. Runs .tml files.")
+  .name("hajune")
+  .description("Hajune — programming in phonetic Tamil. Runs .tml files.")
   .version(version);
 
 program
@@ -33,7 +33,7 @@ program
   .option("--show-js", "also print the generated JavaScript before running")
   .action(runFile);
 
-/** The whole 'tanglish run' journey, start to finish. */
+/** The whole 'hajune run' journey, start to finish. */
 function runFile(file, options) {
   // A missing file should read like a sentence, not an ENOENT dump.
   if (!fs.existsSync(file)) {
@@ -56,11 +56,11 @@ function runFile(file, options) {
   try {
     js = transpile(parse(tokenize(source)));
   } catch (err) {
-    if (err instanceof TanglishError) {
+    if (err instanceof HajuneError) {
       console.error(err.message);
       process.exit(1);
     }
-    throw err; // not a language error — a real bug in Tanglish itself
+    throw err; // not a language error — a real bug in Hajune itself
   }
 
   if (options.showJs) {

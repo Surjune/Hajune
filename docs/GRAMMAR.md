@@ -1,4 +1,4 @@
-# Tanglish Grammar Reference
+# Hajune Grammar Reference
 
 This document describes the formal grammar that `src/parser.js` implements
 and the AST (Abstract Syntax Tree) nodes it produces. It exists so future
@@ -11,7 +11,7 @@ the parser code first.
 .tml source
    → tokenize()            src/lexer.js      (hand-written, char by char)
    → adaptTokens()         src/tokens.js     (reshape for Chevrotain)
-   → TanglishParser        src/parser.js     (Chevrotain CstParser → CST)
+   → HajuneParser        src/parser.js     (Chevrotain CstParser → CST)
    → AstBuilder visitor    src/parser.js     (CST → plain-object AST)
 ```
 
@@ -24,7 +24,7 @@ official marker for "never matched from text").
 ## Grammar (EBNF-style)
 
 UPPERCASE names are token types from the lexer; quoted text shows the
-actual Tanglish word or symbol.
+actual Hajune word or symbol.
 
 ```ebnf
 program              ::= statementList
@@ -173,13 +173,13 @@ Conventions:
 
 ## Errors
 
-All grammar problems throw `TanglishParserError` (see `src/errors.js`),
+All grammar problems throw `HajuneParserError` (see `src/errors.js`),
 whose message always names the line, e.g.:
 
 ```
 Parser error on line 2: expected '}' but found the end of the file.
 ```
 
-Both `TanglishLexerError` and `TanglishParserError` extend the shared
-`TanglishError` base class, so the CLI can catch every language error
-with a single `instanceof TanglishError` check.
+Both `HajuneLexerError` and `HajuneParserError` extend the shared
+`HajuneError` base class, so the CLI can catch every language error
+with a single `instanceof HajuneError` check.

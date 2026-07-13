@@ -15,7 +15,7 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const { tokenize, TanglishLexerError } = require("../src/lexer");
+const { tokenize, HajuneLexerError } = require("../src/lexer");
 
 let failures = 0;
 function check(label, condition) {
@@ -27,14 +27,14 @@ function check(label, condition) {
   }
 }
 
-/** Expect fn() to throw a TanglishLexerError whose message contains `snippet`. */
+/** Expect fn() to throw a HajuneLexerError whose message contains `snippet`. */
 function checkError(label, fn, snippet) {
   try {
     fn();
     failures++;
     console.log(`  FAIL  ${label} (no error was thrown)`);
   } catch (err) {
-    const ok = err instanceof TanglishLexerError && err.message.includes(snippet);
+    const ok = err instanceof HajuneLexerError && err.message.includes(snippet);
     check(`${label} — "${err.message.slice(0, 60)}..."`, ok);
   }
 }
