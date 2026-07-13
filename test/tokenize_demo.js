@@ -75,6 +75,16 @@ check(
   tokenize("marathu")[0].type === "CONST"
 );
 check(
+  "list brackets lex ([1, 2] → LBRACKET NUMBER COMMA NUMBER RBRACKET)",
+  tokenize("[1, 2]").map((t) => t.type).join(" ") ===
+    "LBRACKET NUMBER COMMA NUMBER RBRACKET EOF"
+);
+check(
+  "range dots lex (1 .. 10 and 1..10 both give DOTDOT)",
+  tokenize("1 .. 10")[1].type === "DOTDOT" &&
+  tokenize("1..10").map((t) => t.type).join(" ") === "NUMBER DOTDOT NUMBER EOF"
+);
+check(
   "optional semicolon emits SEMICOLON without error",
   tokenize("x = 5;").some((t) => t.type === "SEMICOLON")
 );

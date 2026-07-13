@@ -11,8 +11,8 @@
  *   - Identifiers: [A-Za-z_][A-Za-z0-9_]*  (Roman baseline only)
  *   - Numbers: integers only (no floats, no leading sign)
  *   - Strings: double-quoted "..." (no escape sequences yet)
- *   - Operators: =  +  -  *  /  >=  <=  >  <  ==  !=
- *   - Punctuation: ( ) { } ,
+ *   - Operators: =  +  -  *  /  >=  <=  >  <  ==  !=  ..
+ *   - Punctuation: ( ) { } [ ] ,
  *   - Semicolons: optional — emitted as SEMICOLON if present
  *   - Newlines: statement terminators — emitted as NEWLINE
  *   - Spaces/tabs: skipped
@@ -38,6 +38,7 @@ const TWO_CHAR_OPS = {
   "<=": "LTE",
   "==": "EQ",
   "!=": "NEQ",
+  "..": "DOTDOT", // range in a mindum loop:  mindum i ulla 1 .. 10
 };
 const ONE_CHAR_TOKENS = {
   "=": "ASSIGN",
@@ -51,6 +52,8 @@ const ONE_CHAR_TOKENS = {
   ")": "RPAREN",
   "{": "LBRACE",
   "}": "RBRACE",
+  "[": "LBRACKET",
+  "]": "RBRACKET",
   ",": "COMMA",
   ";": "SEMICOLON",
 };
