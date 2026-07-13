@@ -16,6 +16,10 @@ Tanglish is a **transpiler**, not a compiler or virtual machine:
             → Transpiler (emits JavaScript) → Node.js executes it
 ```
 
+New to the codebase? **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**
+walks through every file in reading order and traces one small program
+through all four stages.
+
 | Component | Technology |
 |---|---|
 | Implementation language | JavaScript (Node.js v20.19+) |
@@ -152,6 +156,7 @@ Hajune/                       (repo root = the project)
 │   ├── errors.js             shared TanglishError classes
 │   └── transpiler.js         AST → JavaScript emitter
 ├── docs/
+│   ├── ARCHITECTURE.md       start here — guided tour of every file
 │   └── GRAMMAR.md            formal grammar + AST node reference
 ├── examples/
 │   ├── grade_check.tml       the classic demo program

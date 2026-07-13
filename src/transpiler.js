@@ -10,6 +10,12 @@
  *   enil       → if                unmei      → true
  *   illana     → else              poi        → false
  *   thiruppi   → return            onnumilai  → null
+ *   illaenil   → else if           marathu    → const
+ *   varai      → while             niruthu    → break
+ *   mindum..ulla → for / for..of   thodar     → continue
+ *   matrum / allathu / alla → && / || / !
+ * Built-in functions (ullidu, neelam, ...) live in src/builtins.js and
+ * are pasted into the output only when the program calls them.
  *
  * Variables: Tanglish has no 'let' — you just assign, like Python.
  * The transpiler remembers which names it has already seen in the
