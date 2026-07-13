@@ -136,7 +136,61 @@ check("blank lines are tolerated anywhere",
 check("comments plus blank lines still parse",
   parseSource("// header comment\n\na = 1 // trailing\n").body.length === 1);
 
-// ---- 7. Friendly parser errors --------------------------------------------
+// ---- 7. v2 grammar: loops, logic, const, lists -----------------------------
+const wh = parseSource("i = 1\nvarai (i <= 5) {\n  i = i + 1\n}").body[1];
+check("varai parses to WhileStatement",
+  wh.type === "WhileStatement" && wh.condition.operator === "<=" &&
+  wh.body.body.length === 1);
+
+const fr = parseSource("mindum i ulla 1 .. 10 {\n  achchu(i)\n}").body[0];
+check("mindum i ulla 1 .. 10 parses to ForRangeStatement",
+  fr.type === "ForRangeStatement" && fr.variable === "i" &&
+  fr.from.value === 1 && fr.to.value === 10);
+
+const fe = parseSource("mindum m ulla marks {\n  achchu(m)\n}").body[0];
+check("mindum m ulla marks parses to ForEachStatement",
+  fe.type === "ForEachStatement" && fe.variable === "m" &&
+  fe.iterable.type === "Identifier" && fe.iterable.name === "marks");
+
+const bc = parseSource("varai (unmei) {\n  niruthu\n  thodar\n}").body[0].body.body;
+check("niruthu / thodar parse to Break/ContinueStatement",
+  bc[0].type === "BreakStatement" && bc[1].type === "ContinueStatement");
+
+const chain = parseSource(
+  'enil (m >= 90) {\n  achchu("A")\n}\nillaenil (m >= 75) {\n  achchu("B")\n}\nillana {\n  achchu("F")\n}'
+).body[0];
+check("illaenil chains into nested IfStatements",
+  chain.type === "IfStatement" &&
+  chain.alternate.type === "IfStatement" &&
+  chain.alternate.alternate.type === "Block");
+
+const logic = parseSource("x = a matrum b allathu c").body[0].value;
+check("matrum binds tighter than allathu ((a and b) or c)",
+  logic.operator === "allathu" && logic.left.operator === "matrum");
+const notNode = parseSource("x = alla a == b").body[0].value;
+check("alla applies to the whole comparison (not (a == b))",
+  notNode.type === "UnaryExpression" && notNode.operator === "alla" &&
+  notNode.argument.operator === "==");
+
+const cd = parseSource("marathu PASS = 50").body[0];
+check("marathu parses to ConstDeclaration",
+  cd.type === "ConstDeclaration" && cd.name === "PASS" && cd.value.value === 50);
+
+const lst = parseSource("marks = [80, 65, 92]").body[0].value;
+check("list literal parses with 3 elements",
+  lst.type === "ListLiteral" && lst.elements.length === 3);
+check("empty list [] parses",
+  parseSource("x = []").body[0].value.elements.length === 0);
+const idx = parseSource("x = g[1][0]").body[0].value;
+check("chained indexing parses (g[1][0])",
+  idx.type === "IndexExpression" && idx.object.type === "IndexExpression");
+const ia = parseSource("marks[0] = 99").body[0];
+check("index assignment parses (marks[0] = 99)",
+  ia.type === "IndexAssignment" && ia.indices.length === 1 && ia.value.value === 99);
+check("keywords stay case-insensitive in full programs",
+  parseSource('ENIL (Unmei) {\n  Achchu("hi")\n}').body[0].type === "IfStatement");
+
+// ---- 8. Friendly parser errors --------------------------------------------
 checkError("missing closing brace is reported with a line number",
   () => parseSource("seyal f() {\nthiruppi 1\n"), "on line");
 checkError("malformed if (missing ')') is reported",

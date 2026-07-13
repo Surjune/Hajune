@@ -21,13 +21,16 @@
  * exception dump.
  *
  * Expression precedence (weakest binding first):
+ *   allathu     (or)
+ *   matrum      (and)
+ *   alla        (not)
  *   comparison  (>= <= > < == !=)
  *   additive    (+ -)
  *   multiplicative (* /)
  *   unary minus (-x)
- *   primary     (literals, names, calls, parenthesized expressions)
+ *   primary     (literals, names, calls, lists, parenthesized exprs)
  * Lower rules call higher rules, so "2 + 3 * 4" naturally groups as
- * 2 + (3 * 4) = 14.
+ * 2 + (3 * 4) = 14, and "a matrum b allathu c" as (a and b) or c.
  */
 "use strict";
 const { CstParser } = require("chevrotain");
@@ -81,6 +84,35 @@ const friendlyErrorProvider = {
 // Grammar
 // ---------------------------------------------------------------------
 
+/**
+ * Lookahead helper for the statement rule: does an '=' follow the
+ * leading identifier, either immediately (x = ...) or after balanced
+ * square brackets (marks[0] = ..., grid[i][j] = ...)?
+ */
+function isAssignmentAhead($) {
+  if ($.LA(2).tokenType === T.ASSIGN) return true;
+  if ($.LA(2).tokenType !== T.LBRACKET) return false;
+  let i = 2;
+  let depth = 0;
+  while (i < 200) { // safety cap; no sane index runs this long
+    const tt = $.LA(i).tokenType;
+    if (tt === T.LBRACKET) {
+      depth++;
+    } else if (tt === T.RBRACKET) {
+      depth--;
+      if (depth === 0) {
+        const after = $.LA(i + 1).tokenType;
+        if (after === T.ASSIGN) return true;      // marks[0] =
+        if (after !== T.LBRACKET) return false;   // marks[0] used as value
+      }
+    } else if (depth === 0) {
+      return false;
+    }
+    i++;
+  }
+  return false;
+}
+
 class TanglishParser extends CstParser {
   constructor() {
     super(allTokens, {
@@ -109,18 +141,24 @@ class TanglishParser extends CstParser {
       );
     });
 
-    // statement := one of the six statement forms.
+    // statement := one of the eleven statement forms.
     // Assignment and expression-statement BOTH start with a name, so we
-    // peek two tokens ahead (LA(2)): if the next-next token is '=',
-    // it is an assignment; otherwise it is a bare expression.
+    // look ahead: 'name =' is an assignment, 'name[...]... =' is an
+    // indexed assignment (the gate walks past balanced brackets to find
+    // the '='), anything else is a bare expression.
     $.RULE("statement", () => {
       $.OR([
         { ALT: () => $.SUBRULE($.functionDeclaration) },
         { ALT: () => $.SUBRULE($.ifStatement) },
+        { ALT: () => $.SUBRULE($.whileStatement) },
+        { ALT: () => $.SUBRULE($.forStatement) },
+        { ALT: () => $.SUBRULE($.breakStatement) },
+        { ALT: () => $.SUBRULE($.continueStatement) },
+        { ALT: () => $.SUBRULE($.constStatement) },
         { ALT: () => $.SUBRULE($.returnStatement) },
         { ALT: () => $.SUBRULE($.printStatement) },
         {
-          GATE: () => $.LA(2).tokenType === T.ASSIGN,
+          GATE: () => isAssignmentAhead($),
           ALT: () => $.SUBRULE($.assignmentStatement),
         },
         { ALT: () => $.SUBRULE($.expressionStatement) },
@@ -148,19 +186,70 @@ class TanglishParser extends CstParser {
       });
     });
 
-    // ifStatement := 'enil' '(' expression ')' block ('illana' block)?
-    // (Newlines before 'illana' are removed by a pre-pass in parse(),
-    //  so 'illana' may freely sit on its own line in the source.)
+    // ifStatement := 'enil' '(' expr ')' block
+    //                ('illaenil' '(' expr ')' block)*
+    //                ('illana' block)?
+    // (Newlines before 'illaenil'/'illana' are removed by a pre-pass in
+    //  parse(), so both may freely sit on their own line in the source.)
     $.RULE("ifStatement", () => {
       $.CONSUME(T.IF);
       $.CONSUME(T.LPAREN);
       $.SUBRULE($.expression);
       $.CONSUME(T.RPAREN);
-      $.SUBRULE($.block); // consequent (the "then" part)
-      $.OPTION(() => {
-        $.CONSUME(T.ELSE);
-        $.SUBRULE2($.block); // alternate (the "else" part)
+      $.SUBRULE($.block); // the "then" block
+      $.MANY(() => {
+        $.CONSUME(T.ELSEIF); // any number of illaenil branches
+        $.CONSUME2(T.LPAREN);
+        $.SUBRULE2($.expression);
+        $.CONSUME2(T.RPAREN);
+        $.SUBRULE2($.block);
       });
+      $.OPTION(() => {
+        $.CONSUME(T.ELSE); // the final illana block
+        $.SUBRULE3($.block);
+      });
+    });
+
+    // whileStatement := 'varai' '(' expression ')' block
+    $.RULE("whileStatement", () => {
+      $.CONSUME(T.WHILE);
+      $.CONSUME(T.LPAREN);
+      $.SUBRULE($.expression);
+      $.CONSUME(T.RPAREN);
+      $.SUBRULE($.block);
+    });
+
+    // forStatement := 'mindum' name 'ulla' expression ('..' expression)? block
+    // With '..' it is a counting loop:   mindum i ulla 1 .. 10 { }
+    // Without, it walks a list:          mindum m ulla marks { }
+    $.RULE("forStatement", () => {
+      $.CONSUME(T.FOR);
+      $.CONSUME(T.IDENTIFIER);
+      $.CONSUME(T.IN);
+      $.SUBRULE($.expression); // range start, or the list itself
+      $.OPTION(() => {
+        $.CONSUME(T.DOTDOT);
+        $.SUBRULE2($.expression); // range end (inclusive)
+      });
+      $.SUBRULE($.block);
+    });
+
+    // breakStatement := 'niruthu'        (exit the loop now)
+    $.RULE("breakStatement", () => {
+      $.CONSUME(T.BREAK);
+    });
+
+    // continueStatement := 'thodar'      (skip to the next round)
+    $.RULE("continueStatement", () => {
+      $.CONSUME(T.CONTINUE);
+    });
+
+    // constStatement := 'marathu' name '=' expression
+    $.RULE("constStatement", () => {
+      $.CONSUME(T.CONST);
+      $.CONSUME(T.IDENTIFIER);
+      $.CONSUME(T.ASSIGN);
+      $.SUBRULE($.expression);
     });
 
     // returnStatement := 'thiruppi' expression
@@ -177,11 +266,17 @@ class TanglishParser extends CstParser {
       $.CONSUME(T.RPAREN);
     });
 
-    // assignmentStatement := name '=' expression
+    // assignmentStatement := name ('[' expression ']')* '=' expression
+    // Plain (x = 5) or into a list slot (marks[0] = 90, grid[i][j] = 1).
     $.RULE("assignmentStatement", () => {
       $.CONSUME(T.IDENTIFIER);
+      $.MANY(() => {
+        $.CONSUME(T.LBRACKET);
+        $.SUBRULE($.expression); // the index
+        $.CONSUME(T.RBRACKET);
+      });
       $.CONSUME(T.ASSIGN);
-      $.SUBRULE($.expression);
+      $.SUBRULE2($.expression); // the value
     });
 
     // expressionStatement := expression      (e.g. a bare function call)
@@ -197,11 +292,51 @@ class TanglishParser extends CstParser {
     });
 
     // ---- Expressions, from weakest to strongest binding ----
+    // allathu(or) < matrum(and) < alla(not) < comparison < additive
+    //             < multiplicative < unary minus < primary
+    // Same ladder as Python, so conditions read naturally:
+    //   enil (mark >= 50 matrum alla absent)  → (mark >= 50) && (!absent)
 
-    // expression := additive (comparisonOp additive)?
-    // Comparison sits at the TOP (weakest), so "score >= pass_marku + 5"
-    // compares score against the whole sum.
+    // expression := orExpression        (the weakest level starts here)
     $.RULE("expression", () => {
+      $.SUBRULE($.orExpression);
+    });
+
+    // orExpression := andExpr ('allathu' andExpr)*
+    $.RULE("orExpression", () => {
+      $.SUBRULE($.andExpression);
+      $.MANY(() => {
+        $.CONSUME(T.OR);
+        $.SUBRULE2($.andExpression);
+      });
+    });
+
+    // andExpression := notExpr ('matrum' notExpr)*
+    $.RULE("andExpression", () => {
+      $.SUBRULE($.notExpression);
+      $.MANY(() => {
+        $.CONSUME(T.AND);
+        $.SUBRULE2($.notExpression);
+      });
+    });
+
+    // notExpression := 'alla' notExpression | comparison
+    // Recursive, so 'alla alla x' (double negation) also parses.
+    $.RULE("notExpression", () => {
+      $.OR([
+        {
+          ALT: () => {
+            $.CONSUME(T.NOT);
+            $.SUBRULE($.notExpression);
+          },
+        },
+        { ALT: () => $.SUBRULE($.comparisonExpression) },
+      ]);
+    });
+
+    // comparisonExpression := additive (comparisonOp additive)?
+    // "score >= pass_marku + 5" compares score against the whole sum.
+    $.RULE("comparisonExpression", () => {
       $.SUBRULE($.additiveExpression);
       $.OPTION(() => {
         $.CONSUME(ComparisonOperator); // any of  >= <= > < == !=
@@ -234,7 +369,7 @@ class TanglishParser extends CstParser {
     });
 
     // primaryExpression := number | string | unmei | poi | onnumilai
-    //                    | name | name(...)  | '(' expression ')'
+    //                    | list | name | name(...) | '(' expression ')'
     $.RULE("primaryExpression", () => {
       $.OR([
         { ALT: () => $.CONSUME(T.NUMBER) },
@@ -242,20 +377,40 @@ class TanglishParser extends CstParser {
         { ALT: () => $.CONSUME(T.TRUE) },
         { ALT: () => $.CONSUME(T.FALSE) },
         { ALT: () => $.CONSUME(T.NULL) },
+        { ALT: () => $.SUBRULE($.listLiteral) },
         { ALT: () => $.SUBRULE($.callOrIdentifier) },
         { ALT: () => $.SUBRULE($.parenExpression) },
       ]);
     });
 
-    // callOrIdentifier := name ('(' argumentList? ')')?
-    // A name followed by '(' is a function call; otherwise it is a
-    // plain variable reference. The visitor tells them apart.
+    // listLiteral := '[' (expression (',' expression)*)? ']'
+    // e.g.  marks = [80, 65, 92]   or an empty list  []
+    $.RULE("listLiteral", () => {
+      $.CONSUME(T.LBRACKET);
+      $.OPTION(() => {
+        $.SUBRULE($.expression);
+        $.MANY(() => {
+          $.CONSUME(T.COMMA);
+          $.SUBRULE2($.expression);
+        });
+      });
+      $.CONSUME(T.RBRACKET);
+    });
+
+    // callOrIdentifier := name ('(' argumentList? ')')? ('[' expr ']')*
+    // A name followed by '(' is a function call; otherwise a variable.
+    // Either may then be indexed:  marks[0], grid[i][j], top_three()[0].
     $.RULE("callOrIdentifier", () => {
       $.CONSUME(T.IDENTIFIER);
       $.OPTION(() => {
         $.CONSUME(T.LPAREN);
         $.OPTION2(() => $.SUBRULE($.argumentList));
         $.CONSUME(T.RPAREN);
+      });
+      $.MANY(() => {
+        $.CONSUME(T.LBRACKET);
+        $.SUBRULE($.expression); // the index
+        $.CONSUME(T.RBRACKET);
       });
     });
 
@@ -313,6 +468,11 @@ class AstBuilder extends BaseVisitor {
     const inner =
       ctx.functionDeclaration ||
       ctx.ifStatement ||
+      ctx.whileStatement ||
+      ctx.forStatement ||
+      ctx.breakStatement ||
+      ctx.continueStatement ||
+      ctx.constStatement ||
       ctx.returnStatement ||
       ctx.printStatement ||
       ctx.assignmentStatement ||
@@ -336,12 +496,74 @@ class AstBuilder extends BaseVisitor {
   }
 
   ifStatement(ctx) {
+    // enil + any illaenil branches + optional illana, folded into
+    // nested IfStatements from the BOTTOM up:
+    //   enil A / illaenil B / illana  →  if A else (if B else (else-block))
+    const conditions = ctx.expression.map((e) => this.visit(e));
+    const blocks = ctx.block.map((b) => this.visit(b));
+    // One more block than conditions means the trailing illana exists.
+    let alternate =
+      blocks.length > conditions.length ? blocks[blocks.length - 1] : null;
+    for (let i = conditions.length - 1; i >= 0; i--) {
+      alternate = {
+        type: "IfStatement",
+        condition: conditions[i],
+        consequent: blocks[i],
+        alternate,
+        line: i === 0 ? ctx.If[0].startLine : ctx.Elseif[i - 1].startLine,
+      };
+    }
+    return alternate; // the outermost if
+  }
+
+  whileStatement(ctx) {
     return {
-      type: "IfStatement",
+      type: "WhileStatement",
       condition: this.visit(ctx.expression),
-      consequent: this.visit(ctx.block[0]),           // the "then" block
-      alternate: ctx.block[1] ? this.visit(ctx.block[1]) : null, // else block or null
-      line: ctx.If[0].startLine,
+      body: this.visit(ctx.block),
+      line: ctx.While[0].startLine,
+    };
+  }
+
+  forStatement(ctx) {
+    const variable = ctx.Identifier[0].image;
+    const line = ctx.For[0].startLine;
+    const body = this.visit(ctx.block);
+    if (ctx.DotDot) {
+      // mindum i ulla 1 .. 10  → counting loop, both ends included
+      return {
+        type: "ForRangeStatement",
+        variable,
+        from: this.visit(ctx.expression[0]),
+        to: this.visit(ctx.expression[1]),
+        body,
+        line,
+      };
+    }
+    // mindum m ulla marks  → walk each item of a list
+    return {
+      type: "ForEachStatement",
+      variable,
+      iterable: this.visit(ctx.expression[0]),
+      body,
+      line,
+    };
+  }
+
+  breakStatement(ctx) {
+    return { type: "BreakStatement", line: ctx.Break[0].startLine };
+  }
+
+  continueStatement(ctx) {
+    return { type: "ContinueStatement", line: ctx.Continue[0].startLine };
+  }
+
+  constStatement(ctx) {
+    return {
+      type: "ConstDeclaration",
+      name: ctx.Identifier[0].image,
+      value: this.visit(ctx.expression),
+      line: ctx.Const[0].startLine,
     };
   }
 
@@ -362,12 +584,18 @@ class AstBuilder extends BaseVisitor {
   }
 
   assignmentStatement(ctx) {
-    return {
-      type: "Assignment",
-      name: ctx.Identifier[0].image,
-      value: this.visit(ctx.expression),
-      line: ctx.Identifier[0].startLine,
-    };
+    // ctx.expression holds the index expressions (if any) followed by
+    // the value expression — the value is always the LAST one.
+    const exprs = ctx.expression.map((e) => this.visit(e));
+    const value = exprs[exprs.length - 1];
+    const indices = exprs.slice(0, -1);
+    const name = ctx.Identifier[0].image;
+    const line = ctx.Identifier[0].startLine;
+    if (indices.length === 0) {
+      return { type: "Assignment", name, value, line };
+    }
+    // marks[0] = 90   or nested like grid[i][j] = 1
+    return { type: "IndexAssignment", name, indices, value, line };
   }
 
   expressionStatement(ctx) {
@@ -381,6 +609,53 @@ class AstBuilder extends BaseVisitor {
   }
 
   expression(ctx) {
+    return this.visit(ctx.orExpression);
+  }
+
+  // "a allathu b allathu c" folds left-to-right, like additive does.
+  orExpression(ctx) {
+    let node = this.visit(ctx.andExpression[0]);
+    if (ctx.Or) {
+      for (let i = 0; i < ctx.Or.length; i++) {
+        node = {
+          type: "BinaryExpression",
+          operator: "allathu", // becomes || in JavaScript
+          left: node,
+          right: this.visit(ctx.andExpression[i + 1]),
+          line: ctx.Or[i].startLine,
+        };
+      }
+    }
+    return node;
+  }
+
+  andExpression(ctx) {
+    let node = this.visit(ctx.notExpression[0]);
+    if (ctx.And) {
+      for (let i = 0; i < ctx.And.length; i++) {
+        node = {
+          type: "BinaryExpression",
+          operator: "matrum", // becomes && in JavaScript
+          left: node,
+          right: this.visit(ctx.notExpression[i + 1]),
+          line: ctx.And[i].startLine,
+        };
+      }
+    }
+    return node;
+  }
+
+  notExpression(ctx) {
+    if (!ctx.Not) return this.visit(ctx.comparisonExpression);
+    return {
+      type: "UnaryExpression",
+      operator: "alla", // becomes ! in JavaScript
+      argument: this.visit(ctx.notExpression),
+      line: ctx.Not[0].startLine,
+    };
+  }
+
+  comparisonExpression(ctx) {
     const left = this.visit(ctx.additiveExpression[0]);
     if (!ctx.ComparisonOperator) return left; // no comparison — pass through
     return {
@@ -455,22 +730,46 @@ class AstBuilder extends BaseVisitor {
     if (ctx.True) return { type: "BooleanLiteral", value: true, line: ctx.True[0].startLine };
     if (ctx.False) return { type: "BooleanLiteral", value: false, line: ctx.False[0].startLine };
     if (ctx.Null) return { type: "NullLiteral", line: ctx.Null[0].startLine };
+    if (ctx.listLiteral) return this.visit(ctx.listLiteral);
     if (ctx.callOrIdentifier) return this.visit(ctx.callOrIdentifier);
     return this.visit(ctx.parenExpression);
   }
 
   callOrIdentifier(ctx) {
     const nameTok = ctx.Identifier[0];
+    let node;
     if (!ctx.LParen) {
       // Just a variable reference, e.g.  pass_marku
-      return { type: "Identifier", name: nameTok.image, line: nameTok.startLine };
+      node = { type: "Identifier", name: nameTok.image, line: nameTok.startLine };
+    } else {
+      // A function call, e.g.  match_check("Surjune", 87)
+      node = {
+        type: "CallExpression",
+        callee: nameTok.image,
+        args: ctx.argumentList ? this.visit(ctx.argumentList) : [],
+        line: nameTok.startLine,
+      };
     }
-    // A function call, e.g.  match_check("Surjune", 87)
+    // Any [index] parts wrap around what we have so far, left to right:
+    // grid[i][j]  →  Index(Index(grid, i), j)
+    if (ctx.expression) {
+      for (const idx of ctx.expression) {
+        node = {
+          type: "IndexExpression",
+          object: node,
+          index: this.visit(idx),
+          line: nameTok.startLine,
+        };
+      }
+    }
+    return node;
+  }
+
+  listLiteral(ctx) {
     return {
-      type: "CallExpression",
-      callee: nameTok.image,
-      args: ctx.argumentList ? this.visit(ctx.argumentList) : [],
-      line: nameTok.startLine,
+      type: "ListLiteral",
+      elements: ctx.expression ? ctx.expression.map((e) => this.visit(e)) : [],
+      line: ctx.LBracket[0].startLine,
     };
   }
 
@@ -491,10 +790,10 @@ const astBuilder = new AstBuilder();
 // ---------------------------------------------------------------------
 
 /**
- * Pre-pass: delete NEWLINE tokens that come right before 'illana'.
- * Tanglish lets you write  }  and  illana {  on separate lines (see the
- * demo program); grammatically the 'illana' still belongs to the if
- * above it, so those newlines are not real statement breaks.
+ * Pre-pass: delete NEWLINE tokens that come right before 'illana' or
+ * 'illaenil'. Tanglish lets you write  }  and  illana {  on separate
+ * lines (see the demo program); grammatically they still belong to the
+ * if above, so those newlines are not real statement breaks.
  */
 function dropNewlinesBeforeElse(tokens) {
   const out = [];
@@ -502,8 +801,8 @@ function dropNewlinesBeforeElse(tokens) {
     if (tokens[i].type === "NEWLINE") {
       let j = i;
       while (j < tokens.length && tokens[j].type === "NEWLINE") j++;
-      if (j < tokens.length && tokens[j].type === "ELSE") {
-        i = j - 1; // skip the whole newline run; loop's i++ lands on ELSE
+      if (j < tokens.length && (tokens[j].type === "ELSE" || tokens[j].type === "ELSEIF")) {
+        i = j - 1; // skip the whole newline run; loop's i++ lands on it
         continue;
       }
     }
