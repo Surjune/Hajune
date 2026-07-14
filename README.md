@@ -157,6 +157,7 @@ Hajune/                       (repo root = the project)
 │   └── transpiler.js         AST → JavaScript emitter
 ├── docs/
 │   ├── ARCHITECTURE.md       start here — guided tour of every file
+│   ├── Hajune_Project_Guide.pdf  printable 6-page guide
 │   └── GRAMMAR.md            formal grammar + AST node reference
 ├── examples/
 │   ├── grade_check.tml       the classic demo program
@@ -166,7 +167,7 @@ Hajune/                       (repo root = the project)
 │   ├── tokenize_demo.js      lexer sanity checks
 │   ├── parser_demo.js        parser/AST sanity checks
 │   └── transpile_demo.js     transpiler + program-output checks
-├── cli.js                    Commander.js entry point   (Task 4 — later)
+├── cli.js                    the `hajune run` command (Commander.js)
 └── package.json
 ```
 
@@ -174,5 +175,6 @@ Hajune/                       (repo root = the project)
 
 ```
 npm install
-npm test        # runs the lexer checks
+npm test        # runs all three suites (~100 checks)
+npm link        # register the global `hajune` command
 ```
